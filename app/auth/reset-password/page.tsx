@@ -25,7 +25,6 @@ export default function ResetPasswordPage() {
   const supabase = createClient()
 
   useEffect(() => {
-    
     const handleAuthCallback = async () => {
       const { data, error } = await supabase.auth.getSession()
       if (error) {
@@ -64,7 +63,6 @@ export default function ResetPasswordPage() {
       setIsSuccess(true)
       setMessage("Password updated successfully! Redirecting to login...")
 
-      // Redirect to login after 2 seconds
       setTimeout(() => {
         router.push("/auth/login")
       }, 2000)
@@ -77,22 +75,32 @@ export default function ResetPasswordPage() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-emerald-100 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="text-center">
-              <div className="flex items-center justify-center mb-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7dd3c0]/30 to-[#7dd3c0]/10 border border-[#7dd3c0]/50 flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-[#7dd3c0]" />
+            </div>
+          </div>
+
+          <Card className="border border-white/10 bg-white/[0.02] backdrop-blur-sm shadow-2xl">
+            <CardHeader className="text-center border-b border-white/10 pb-6">
+              <CardTitle className="font-serif text-3xl text-white mb-2">
                 Password Updated!
               </CardTitle>
-              <CardDescription className="text-gray-600">
-                Your password has been successfully updated. You will be redirected to the login page.
+              <CardDescription className="text-sm text-neutral-400 leading-relaxed">
+                Your password has been successfully updated. Redirecting to login...
               </CardDescription>
             </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex justify-center">
+                <div className="animate-pulse flex space-x-2">
+                  <div className="w-2 h-2 bg-[#7dd3c0] rounded-full"></div>
+                  <div className="w-2 h-2 bg-[#7dd3c0] rounded-full"></div>
+                  <div className="w-2 h-2 bg-[#7dd3c0] rounded-full"></div>
+                </div>
+              </div>
+            </CardContent>
           </Card>
         </div>
       </div>
@@ -100,66 +108,94 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-cyan-50 to-emerald-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-black flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-          <CardHeader className="text-center">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-full flex items-center justify-center">
-                <Lock className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">
+        {/* Logo/Icon */}
+        <div className="flex justify-center mb-8">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#7dd3c0]/30 to-[#7dd3c0]/10 border border-[#7dd3c0]/50 flex items-center justify-center">
+            <Lock className="w-8 h-8 text-[#7dd3c0]" />
+          </div>
+        </div>
+
+        <Card className="border border-white/10 bg-white/[0.02] backdrop-blur-sm shadow-2xl">
+          <CardHeader className="text-center border-b border-white/10 pb-6">
+            <CardTitle className="font-serif text-3xl text-white mb-2">
               Set New Password
             </CardTitle>
-            <CardDescription className="text-gray-600">Enter your new password below</CardDescription>
+            <CardDescription className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+              Enter your new password below
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleResetPassword} className="space-y-4">
+          
+          <CardContent className="pt-6">
+            <form onSubmit={handleResetPassword} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter new password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="border-gray-200 focus:border-emerald-500"
-                />
+                <Label 
+                  htmlFor="password" 
+                  className="text-[10px] uppercase tracking-[0.15em] text-neutral-400"
+                >
+                  New Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter new password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 bg-white/[0.02] border-white/10 text-white placeholder:text-neutral-600 focus:border-[#7dd3c0] focus:ring-[#7dd3c0]/20 transition-all"
+                  />
+                </div>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm new password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="border-gray-200 focus:border-emerald-500"
-                />
+                <Label 
+                  htmlFor="confirmPassword" 
+                  className="text-[10px] uppercase tracking-[0.15em] text-neutral-400"
+                >
+                  Confirm Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="Confirm new password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10 bg-white/[0.02] border-white/10 text-white placeholder:text-neutral-600 focus:border-[#7dd3c0] focus:ring-[#7dd3c0]/20 transition-all"
+                  />
+                </div>
               </div>
+
               {error && (
-                <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-200">{error}</div>
+                <div className="p-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded">
+                  {error}
+                </div>
               )}
+              
               {message && (
-                <div className="p-3 text-sm text-emerald-600 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="p-4 text-sm text-[#7dd3c0] bg-[#7dd3c0]/10 border border-[#7dd3c0]/20 rounded">
                   {message}
                 </div>
               )}
+
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white"
+                className="w-full bg-[#7dd3c0] hover:bg-[#7dd3c0]/90 text-black font-medium text-sm uppercase tracking-[0.1em] transition-all h-11"
                 disabled={isLoading}
               >
                 {isLoading ? "Updating..." : "Update Password"}
               </Button>
             </form>
-            <div className="mt-6 text-center">
+
+            <div className="mt-8 pt-6 border-t border-white/10 text-center">
               <Link
                 href="/auth/login"
-                className="inline-flex items-center text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                className="inline-flex items-center text-xs uppercase tracking-[0.15em] text-neutral-400 hover:text-[#7dd3c0] transition-colors"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Sign In
@@ -167,6 +203,11 @@ export default function ResetPasswordPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Footer */}
+        <p className="text-center mt-8 text-[9px] uppercase tracking-[0.2em] text-neutral-600">
+          Secure Password Reset
+        </p>
       </div>
     </div>
   )

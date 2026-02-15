@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -20,6 +19,7 @@ const DefaultIcon = L.icon({
 });
 
 L.Marker.prototype.options.icon = DefaultIcon;
+
 type EventType = {
   id: string;
   title: string;
@@ -32,14 +32,17 @@ type EventType = {
 type MapComponentProps = {
   events: EventType[];
   selectedEvent: EventType | null;
-  searchTerm: string; 
+  searchTerm: string;
 };
 
-export default function MapComponent({ events, selectedEvent, searchTerm }: MapComponentProps) {
+export default function MapComponent({
+  events,
+  selectedEvent,
+  searchTerm,
+}: MapComponentProps) {
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<string, L.Marker>>({});
 
- 
   useEffect(() => {
     if (mapRef.current) return;
 
@@ -56,7 +59,6 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
       maxZoom: 30,
       maxBounds: thaparBounds,
       maxBoundsViscosity: 1.0,
-      zoomControl: true,
     });
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -66,7 +68,7 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
 
     mapRef.current = map;
 
-   
+    // Geocoder
     // @ts-ignore
     const geocoder = L.Control.Geocoder.nominatim({
       geocodingQueryParams: {
@@ -74,24 +76,10 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
         bounded: 1,
         viewbox: "76.3580,30.3490,76.3790,30.3595",
       },
-      // @ts-ignore
-      geocodingCallback: function (results: any, cb: any) {
-        const input = (document.querySelector(
-          ".leaflet-control-geocoder-form input"
-        ) as HTMLInputElement)?.value?.toLowerCase();
-
-        const filtered = results.filter(
-          (r: any) =>
-            L.latLngBounds(thaparBounds).contains(r.center) &&
-            (!input || r.name?.toLowerCase().includes(input))
-        );
-
-        cb(filtered);
-      },
     });
 
     // @ts-ignore
-    const control = L.Control.geocoder({
+    L.Control.geocoder({
       geocoder,
       placeholder: "Search inside Thapar campus.",
       defaultMarkGeocode: false,
@@ -99,44 +87,47 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
     })
       .on("markgeocode", (e: any) => {
         const { center, name } = e.geocode;
-        if (L.latLngBounds(thaparBounds).contains(center)) {
-          const marker = L.marker(center).addTo(map).bindPopup(`
-            <b>${name}</b><br>
-            <button 
-              id="map-search-directions"
-              style="
-                background-color:#2563eb;
-                color:white;
-                border:none;
-                border-radius:6px;
-                padding:6px 10px;
-                cursor:pointer;
-              ">
-              Get Directions
-            </button>
-          `);
-          marker.openPopup();
-          map.setView(center, 18);
 
-         
-          setTimeout(() => {
-            const btn = document.getElementById("map-search-directions");
-            if (btn) {
-              btn.addEventListener("click", () => {
-                window.open(
-                  `https://www.google.com/maps/dir/?api=1&destination=${center.lat},${center.lng}`,
-                  "_blank"
-                );
-              });
-            }
-          }, 200);
-        } else {
-          alert(" Please search within Thapar University campus only.");
-        }
+        const marker = L.marker(center).addTo(map).bindPopup(`
+          <div style="font-weight:500; font-size:15px; margin-bottom:10px;">
+            ${name}
+          </div>
+
+          <button 
+            id="map-search-directions"
+            style="
+              width:100%;
+              background:#7dd3c0;
+              color:black;
+              border:none;
+              border-radius:8px;
+              padding:8px 12px;
+              cursor:pointer;
+              font-size:11px;
+              text-transform:uppercase;
+              letter-spacing:1px;
+            ">
+            Get Directions
+          </button>
+        `);
+
+        marker.openPopup();
+        map.setView(center, 18);
+
+        setTimeout(() => {
+          const btn = document.getElementById("map-search-directions");
+          if (btn) {
+            btn.addEventListener("click", () => {
+              window.open(
+                `https://www.google.com/maps/dir/?api=1&destination=${center.lat},${center.lng}`,
+                "_blank"
+              );
+            });
+          }
+        }, 200);
       })
       .addTo(map);
   }, []);
-
 
   useEffect(() => {
     if (!searchTerm?.trim()) {
@@ -144,8 +135,9 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
     }
   }, [searchTerm]);
 
-  // Create or update marker
-  const ensureMarkerForEvent = async (event: EventType): Promise<L.Marker | null> => {
+  const ensureMarkerForEvent = async (
+    event: EventType
+  ): Promise<L.Marker | null> => {
     if (!mapRef.current) return null;
     const map = mapRef.current;
     const supabase = createClient();
@@ -163,32 +155,52 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
         latitude = parseFloat(geo[0].lat);
         longitude = parseFloat(geo[0].lon);
 
-        await supabase.from("events").update({ latitude, longitude }).eq("id", event.id);
+        await supabase
+          .from("events")
+          .update({ latitude, longitude })
+          .eq("id", event.id);
       } else {
-        console.warn("No valid result inside Thapar for:", event.location);
         return null;
       }
     }
 
     const marker = L.marker([latitude, longitude]).addTo(map);
 
-    //  Add "Get Directions" 
     const popupHTML = `
-      <b>${event.title}</b><br>
-      ${event.location}<br>
-      <small>${event.category || ""}</small><br><br>
-      <button 
-        id="directions-${event.id}" 
-        style="
-          background-color:#2563eb;
-          color:white;
-          border:none;
-          border-radius:6px;
-          padding:6px 10px;
-          cursor:pointer;
-        ">
-        Get Directions
-      </button>
+      <div style="font-family:inherit;">
+        <div style="font-weight:500; font-size:16px; margin-bottom:4px;">
+          ${event.title}
+        </div>
+
+        <div style="font-size:13px; opacity:0.8; margin-bottom:4px;">
+          ${event.location}
+        </div>
+
+        ${
+          event.category
+            ? `<div style="font-size:11px; opacity:0.6; margin-bottom:10px;">
+                ${event.category}
+               </div>`
+            : ""
+        }
+
+        <button 
+          id="directions-${event.id}" 
+          style="
+            width:100%;
+            background:#7dd3c0;
+            color:black;
+            border:none;
+            border-radius:8px;
+            padding:8px 12px;
+            cursor:pointer;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:1px;
+          ">
+          Get Directions
+        </button>
+      </div>
     `;
 
     marker.bindPopup(popupHTML);
@@ -198,8 +210,10 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
       const btn = document.getElementById(`directions-${event.id}`);
       if (btn) {
         btn.addEventListener("click", () => {
-          const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-          window.open(url, "_blank");
+          window.open(
+            `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`,
+            "_blank"
+          );
         });
       }
     });
@@ -210,33 +224,32 @@ export default function MapComponent({ events, selectedEvent, searchTerm }: MapC
   useEffect(() => {
     const loadMarkers = async () => {
       if (!mapRef.current) return;
+
       Object.values(markersRef.current).forEach((m) => m.remove());
       markersRef.current = {};
 
       for (const event of events) {
-        const marker = await ensureMarkerForEvent(event);
-        if (marker) markersRef.current[event.id] = marker;
+        await ensureMarkerForEvent(event);
       }
     };
 
     if (events.length > 0) loadMarkers();
   }, [events]);
 
-
   useEffect(() => {
     const centerOnSelected = async () => {
       if (!mapRef.current || !selectedEvent) return;
-      const map = mapRef.current;
 
       let marker = markersRef.current[selectedEvent.id];
-      if (!marker) await ensureMarkerForEvent(selectedEvent);
+   
 
       if (marker) {
         marker.openPopup();
         const { lat, lng } = marker.getLatLng();
-        map.flyTo([lat, lng], 18, { animate: true, duration: 1.2 });
-      } else {
-        alert("Location for this event could not be found inside Thapar campus.");
+        mapRef.current?.flyTo([lat, lng], 18, {
+          animate: true,
+          duration: 1.2,
+        });
       }
     };
 

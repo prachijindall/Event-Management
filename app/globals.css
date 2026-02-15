@@ -153,3 +153,21 @@
 .react-calendar__tile:hover {
   background: #d1fae5;
 } 
+/* Leaflet Geocoder search text styling */
+.leaflet-control-geocoder input {
+  color: #000000 !important;
+}
+
+.leaflet-control-geocoder input::placeholder {
+  color: #666666 !important;
+}
+
+/* Also style the results dropdown if needed */
+.leaflet-control-geocoder-alternatives {
+  color: #000000 !important;
+  background: #ffffff !important;
+}
+
+.leaflet-control-geocoder-alternatives a {
+  color: #000000 !important;
+}
